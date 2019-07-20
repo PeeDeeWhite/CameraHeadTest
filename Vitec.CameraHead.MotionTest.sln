@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28922.388
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F3546C29-A83D-4C1B-BABA-F3C4D7DE0B10}"
+	ProjectSection(SolutionItems) = preProject
+		readme.md = readme.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitec.CameraHead.Models", "Vitec.CameraHead.Models\Vitec.CameraHead.Models.csproj", "{BBA4F4FD-FDF4-4D78-8B7D-7B3B47309F50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitec.CameraHead.MotionTest", "Vitec.CameraHead.MotionTest\Vitec.CameraHead.MotionTest.csproj", "{D075EB55-3A36-4974-824D-4C678201E844}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitec.CameraHead.UnitTests", "Vitec.CameraHead.UnitTests\Vitec.CameraHead.UnitTests.csproj", "{67946F80-7175-4E27-8B51-09E36A7C7D89}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BBA4F4FD-FDF4-4D78-8B7D-7B3B47309F50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBA4F4FD-FDF4-4D78-8B7D-7B3B47309F50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBA4F4FD-FDF4-4D78-8B7D-7B3B47309F50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBA4F4FD-FDF4-4D78-8B7D-7B3B47309F50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D075EB55-3A36-4974-824D-4C678201E844}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D075EB55-3A36-4974-824D-4C678201E844}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D075EB55-3A36-4974-824D-4C678201E844}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D075EB55-3A36-4974-824D-4C678201E844}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67946F80-7175-4E27-8B51-09E36A7C7D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67946F80-7175-4E27-8B51-09E36A7C7D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67946F80-7175-4E27-8B51-09E36A7C7D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67946F80-7175-4E27-8B51-09E36A7C7D89}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {370CB8A3-797C-4232-AC1A-BBD145043F1E}
+	EndGlobalSection
+EndGlobal
