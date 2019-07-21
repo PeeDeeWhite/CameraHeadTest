@@ -41,6 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CameraHeadBase.cs" />
+    <Compile Include="Configuration\TargetPosition.cs" />
+    <Compile Include="FHR155.cs" />
     <Compile Include="FHR35.cs" />
     <Compile Include="CameraHeadPositionEventArgs.cs" />
     <Compile Include="ICameraHead.cs" />
@@ -50,8 +53,10 @@
     <Compile Include="StatusChangedEventArgs.cs" />
     <Compile Include="Studio.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Configuration\CameraHead.cs" />
     <Compile Include="Target.cs" />
     <Compile Include="TestCameraHead.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

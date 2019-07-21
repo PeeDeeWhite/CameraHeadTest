@@ -9,24 +9,28 @@ namespace Vitec.CameraHead.Models {
     /// Decompiled from Interview1 assembly and added to this solutions name space
     /// </summary>
     public class TestCameraHead : ICameraHead {
+        private readonly double _panVelocity;
+        private readonly double _tiltVelocity;
         private const double PanVelocity = 0.50123;
         private const double TiltVelocity = 0.50123;
         private const int UpdateInterval = 100;
-        private Position currentPosition = new Position(0.0, 0.0);
-        private bool finished;
-        private Position movePosition;
-        private readonly object myLock = new object();
-        private double panVector;
-        private CameraHeadStatus status = CameraHeadStatus.Idle;
-        private double tiltVector;
-        private TimeSpan timeToShot;
-        private readonly Timer updateTimer = new Timer(UpdateInterval);
+        private Position _currentPosition = new Position(0.0, 0.0);
+        private bool _finished;
+        private Position _movePosition;
+        private readonly object _myLock = new object();
+        private double _panVector;
+        private CameraHeadStatus _status = CameraHeadStatus.Idle;
+        private double _tiltVector;
+        private TimeSpan _timeToShot;
+        private readonly Timer _updateTimer = new Timer(UpdateInterval);
 
-        public TestCameraHead(string name) {
+        public TestCameraHead(string name, double panVelocity = PanVelocity, double tiltVelocity = TiltVelocity) {
+            _panVelocity = panVelocity;
+            _tiltVelocity = tiltVelocity;
             Name = name;
-            updateTimer.AutoReset = true;
-            updateTimer.Elapsed += UpdateTimerElapsed;
-            updateTimer.Start();
+            _updateTimer.AutoReset = true;
+            _updateTimer.Elapsed += UpdateTimerElapsed;
+            _updateTimer.Start();
         }
 
         public string Name { get; }
@@ -36,26 +40,26 @@ namespace Vitec.CameraHead.Models {
         public event EventHandler<StatusChangedEventArgs> OnStatusChanged;
 
         public void SetPosition(Position position) {
-            lock (myLock) {
-                movePosition = position;
-                var num1 = position.Pan - currentPosition.Pan;
-                var num2 = position.Tilt - currentPosition.Tilt;
-                var num3 = Math.Max(Math.Abs(num1) / PanVelocity, Math.Abs(num2) / TiltVelocity);
-                timeToShot = TimeSpan.FromMilliseconds(num3 * UpdateInterval);
-                panVector = num1 == 0.0 ? 0.0 : num1 / num3;
-                tiltVector = num2 == 0.0 ? 0.0 : num2 / num3;
-                finished = false;
+            lock (_myLock) {
+                _movePosition = position;
+                var num1 = position.Pan - _currentPosition.Pan;
+                var num2 = position.Tilt - _currentPosition.Tilt;
+                var num3 = Math.Max(Math.Abs(num1) / _panVelocity, Math.Abs(num2) / _tiltVelocity);
+                _timeToShot = TimeSpan.FromMilliseconds(num3 * UpdateInterval);
+                _panVector = num1 == 0.0 ? 0.0 : num1 / num3;
+                _tiltVector = num2 == 0.0 ? 0.0 : num2 / num3;
+                _finished = false;
             }
 
-            do { } while (!finished);
+            do { } while (!_finished);
         }
 
         private void UpdateTimerElapsed(object sender, ElapsedEventArgs e) {
-            lock (myLock) {
-                if (movePosition != null) {
-                    movePosition = null;
+            lock (_myLock) {
+                if (_movePosition != null) {
+                    _movePosition = null;
 
-                    switch (status) {
+                    switch (_status) {
                         case CameraHeadStatus.Idle:
                             SetStatus(CameraHeadStatus.Moving);
 
@@ -68,24 +72,24 @@ namespace Vitec.CameraHead.Models {
                     }
                 }
 
-                if (status != CameraHeadStatus.Moving)
+                if (_status != CameraHeadStatus.Moving)
                     return;
 
-                currentPosition = new Position(currentPosition.Pan + panVector, currentPosition.Tilt + tiltVector);
-                timeToShot = timeToShot.Subtract(TimeSpan.FromMilliseconds(UpdateInterval));
-                if (timeToShot.TotalMilliseconds < 0.0)
-                    timeToShot = TimeSpan.Zero;
+                _currentPosition = new Position(_currentPosition.Pan + _panVector, _currentPosition.Tilt + _tiltVector);
+                _timeToShot = _timeToShot.Subtract(TimeSpan.FromMilliseconds(UpdateInterval));
+                if (_timeToShot.TotalMilliseconds < 0.0)
+                    _timeToShot = TimeSpan.Zero;
                 RaisePositionChanged();
 
-                if (timeToShot.TotalMilliseconds == 0.0) {
+                if (_timeToShot.TotalMilliseconds == 0.0) {
                     SetStatus(CameraHeadStatus.Idle);
-                    finished = true;
+                    _finished = true;
                 }
             }
         }
 
         private void SetStatus(CameraHeadStatus cameraHeadStatus) {
-            status = cameraHeadStatus;
+            _status = cameraHeadStatus;
             RaiseStatusChanged();
         }
 
@@ -93,14 +97,14 @@ namespace Vitec.CameraHead.Models {
             if (OnStatusChanged == null)
                 return;
 
-            OnStatusChanged(this, new StatusChangedEventArgs(status));
+            OnStatusChanged(this, new StatusChangedEventArgs(_status));
         }
 
         private void RaisePositionChanged() {
             if (OnPositionChanged == null)
                 return;
 
-            OnPositionChanged(this, new CameraHeadPositionEventArgs(currentPosition, timeToShot));
+            OnPositionChanged(this, new CameraHeadPositionEventArgs(_currentPosition, _timeToShot));
         }
     }
 }
