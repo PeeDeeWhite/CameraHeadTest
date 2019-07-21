@@ -57,7 +57,7 @@ namespace Vitec.CameraHead.Models {
         /// <returns></returns>
         private Position AdjustForMinMaxRange(Position position) {
             var destinationPan = position.Pan >= 0 ? Math.Min(position.Pan, MaxPanRange) : Math.Max(position.Pan, MinPanRange);
-            var destinationTilt = Math.Min(position.Tilt, position.Tilt >=0 ? MaxTiltRange : MinTiltRange);
+            var destinationTilt = position.Tilt >= 0 ? Math.Min(position.Tilt, MaxTiltRange) : Math.Max(position.Tilt, MinTiltRange);
 
             return new Position(destinationPan, destinationTilt);
         }
