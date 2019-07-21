@@ -9,11 +9,39 @@
         mc:Ignorable="d"
         Title="Vitec Camera Head Test Utility" 
         Height="450" Width="800"
-        d:DesignHeight="450" d:DesignWidth="800" 
+        d:DesignHeight="450" d:DesignWidth="500" 
         local:ViewModelLocator.AutoWireViewModel="True">
+	<!--<Window.Resources>
+		<DataTemplate DataType="{x:Type local:CameraHeadMonitorViewModel}">
+			<local:CameraHeadMonitorView/>
+		</DataTemplate>
+	</Window.Resources>-->
 	<Grid>
-		<Label Content="Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="54.677"/>
-		<ComboBox HorizontalAlignment="Left" Margin="70,10,0,0" VerticalAlignment="Top" Width="146" Height="26" SelectedValuePath="Name" ItemsSource="{Binding Path=Studio.Targets}" DisplayMemberPath="Name"/>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="250"/>
+			<ColumnDefinition Width="5"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+		<StackPanel Orientation="Horizontal">
 
+		<Label Content="Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
+		<ComboBox HorizontalAlignment="Left" Margin="70,10,0,0" VerticalAlignment="Top" Height="26" Width="100" 
+		          ItemsSource="{Binding Path=Studio.Targets}" 
+		          DisplayMemberPath="Name" 
+		          SelectedValue="{Binding SelectedTarget}"/>
+		</StackPanel>
+		<GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="5"/>
+		<ItemsControl Grid.Column="2" ItemsSource="{Binding CameraHeadViewModels}">
+			<!--<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>-->
+			<ItemsControl.ItemTemplate>
+				<DataTemplate DataType="{x:Type local:CameraHeadMonitorViewModel}">
+					<local:CameraHeadMonitorView/>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
 	</Grid>
 </Window>

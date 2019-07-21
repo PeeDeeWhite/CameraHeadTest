@@ -17,7 +17,7 @@
         /// <param name="name"></param>
         /// <param name="panVelocity"></param>
         /// <param name="tiltVelocity"></param>
-        public FHR155(string name, double panVelocity = 30, double tiltVelocity = 30) : base(name, panVelocity, tiltVelocity) {
+        public FHR155(string name, double panVelocity = 1, double tiltVelocity = 1) : base(name, panVelocity, tiltVelocity) {
             MinPanRange = -179.5;
             MaxPanRange = 179.5;
             MinTiltRange = -172.5;

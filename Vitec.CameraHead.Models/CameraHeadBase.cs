@@ -4,8 +4,8 @@ namespace Vitec.CameraHead.Models {
     using System.Threading.Tasks;
 
     public abstract class CameraHeadBase : ICameraHead {
-        private readonly double _panVelocity;
-        private readonly double _tiltVelocity;
+        private readonly double _panVelocity; // degrees/second
+        private readonly double _tiltVelocity; // degrees/second
         private protected double MaxPanRange;
         private protected double MaxTiltRange;
         private protected double MinPanRange;
@@ -51,13 +51,13 @@ namespace Vitec.CameraHead.Models {
         }
 
         /// <summary>
-        ///     Limit destination position to maximum range of head
+        ///  Limit destination position to maximum range of head
         /// </summary>
         /// <param name="position"></param>
         /// <returns></returns>
         private Position AdjustForMinMaxRange(Position position) {
-            var destinationPan = Math.Min(position.Pan, position.Pan > CurrentPosition.Pan ? MaxPanRange : MinPanRange);
-            var destinationTilt = Math.Min(position.Tilt, position.Tilt > CurrentPosition.Tilt ? MaxTiltRange : MinTiltRange);
+            var destinationPan = position.Pan >= 0 ? Math.Min(position.Pan, MaxPanRange) : Math.Max(position.Pan, MinPanRange);
+            var destinationTilt = Math.Min(position.Tilt, position.Tilt >=0 ? MaxTiltRange : MinTiltRange);
 
             return new Position(destinationPan, destinationTilt);
         }
@@ -82,31 +82,32 @@ namespace Vitec.CameraHead.Models {
         }
 
         private double CalcVectorPerInterval(double current, double destination, double panVelocity) {
-            var toTravel = current - destination;
-            var timeToDestination = Math.Abs(current - destination) / panVelocity;
+            var toTravel = Math.Abs(destination - current);
+            var timeToDestination = toTravel / panVelocity;
 
-            return toTravel == 0.0 ? 0.0 : toTravel / timeToDestination;
+            return toTravel == 0.0 ? 0.0 : (toTravel / timeToDestination) / (1000.00/UpdateInterval);
         }
 
         private bool MovementCompleted(Position destination) {
-            // Invoke custom equals 
-            return CurrentPosition.Equals(destination);
+            return Math.Abs(CurrentPosition.Pan) >= Math.Abs(destination.Pan) && Math.Abs(CurrentPosition.Tilt) >= Math.Abs(destination.Tilt);
         }
 
         private async Task<Position> CalcNewPosition(double panVector, double tiltVector, int interval) {
             RaiseOnStatusChanged(new StatusChangedEventArgs(CameraHeadStatus.Moving));
+
             await Task.Delay(interval);
             var newPosition = new Position(CurrentPosition.Pan + panVector, CurrentPosition.Tilt + tiltVector);
+
             RaiseOnPositionChanged(new CameraHeadPositionEventArgs(newPosition, TimeSpan.FromMilliseconds(Math.Max(panVector, tiltVector) * interval)));
 
             return newPosition;
         }
 
-        protected virtual void RaiseOnStatusChanged(StatusChangedEventArgs e) {
+        private void RaiseOnStatusChanged(StatusChangedEventArgs e) {
             OnStatusChanged?.Invoke(this, e);
         }
 
-        protected virtual void RaiseOnPositionChanged(CameraHeadPositionEventArgs e) {
+        private void RaiseOnPositionChanged(CameraHeadPositionEventArgs e) {
             OnPositionChanged?.Invoke(this, e);
         }
     }
