@@ -1,17 +1,20 @@
 ﻿// ReSharper disable CompareOfFloatsByEqualityOperator 
 namespace Vitec.CameraHead.Models {
     using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public abstract class CameraHeadBase : ICameraHead {
         private readonly double _panVelocity; // degrees/second
         private readonly double _tiltVelocity; // degrees/second
-        private protected double MaxPanRange;
-        private protected double MaxTiltRange;
-        private protected double MinPanRange;
-        private protected double MinTiltRange;
+        private Position _currentPosition;
+        private protected Position MinPosition;
+        private protected Position MaxPosition;
         private protected int UpdateInterval; // Update interval in milliseconds
-
+        private readonly List<CancellationTokenSource> _cancellationTokenSources = new List<CancellationTokenSource>();
         public event EventHandler<CameraHeadPositionEventArgs> OnPositionChanged;
 
         public event EventHandler<StatusChangedEventArgs> OnStatusChanged;
@@ -24,10 +27,9 @@ namespace Vitec.CameraHead.Models {
             _tiltVelocity = tiltVelocity;
 
             // Assume Head initialized to home location
-            CurrentPosition = new Position(0.0, 0.0);
+            _currentPosition = new Position(0.0, 0.0);
         }
 
-        private Position CurrentPosition { get; set; }
 
         public string Name { get; }
 
@@ -40,24 +42,40 @@ namespace Vitec.CameraHead.Models {
         ///     to false we can avoid blocking the synchronization context.
         /// </remarks>
         public async void SetPosition(Position position) {
+            // Cancel any task in progress
+            foreach (var cts in _cancellationTokenSources.Where(x => !x.IsCancellationRequested)) {
+                    cts.Cancel();
+            }
+
             // Register head stopping before moving to new position
             RaiseOnStatusChanged(new StatusChangedEventArgs(CameraHeadStatus.Idle));
 
-            if (CurrentPosition.Equals(position)) {
+            if (_currentPosition.Equals(position)) {
                 return;
             }
 
-            await MoveToPosition(CurrentPosition, AdjustForMinMaxRange(position), _panVelocity, _tiltVelocity).ConfigureAwait(false);
+            var cancellationTokenSource = new CancellationTokenSource();
+            _cancellationTokenSources.Add(cancellationTokenSource);
+
+            try {
+                await MoveToPosition(_currentPosition, AdjustForLimits(position, MinPosition, MaxPosition), cancellationTokenSource.Token)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) {
+                Debug.WriteLine($"{DateTime.UtcNow:T} {nameof(SetPosition)} Camera Head {Name} - Cancelled");
+            }
         }
 
         /// <summary>
-        ///  Limit destination position to maximum range of head
+        ///  Limit destination position to min and max Pan and Tilt parameters
         /// </summary>
         /// <param name="position"></param>
+        /// <param name="minPosition"></param>
+        /// <param name="maxPosition"></param>
         /// <returns></returns>
-        private Position AdjustForMinMaxRange(Position position) {
-            var destinationPan = position.Pan >= 0 ? Math.Min(position.Pan, MaxPanRange) : Math.Max(position.Pan, MinPanRange);
-            var destinationTilt = position.Tilt >= 0 ? Math.Min(position.Tilt, MaxTiltRange) : Math.Max(position.Tilt, MinTiltRange);
+        private Position AdjustForLimits(Position position, Position minPosition, Position maxPosition) {
+            var destinationPan = position.Pan >= 0 ? Math.Min(position.Pan, maxPosition.Pan) : Math.Max(position.Pan, minPosition.Pan);
+            var destinationTilt = position.Tilt >= 0 ? Math.Min(position.Tilt, maxPosition.Tilt) : Math.Max(position.Tilt, minPosition.Tilt);
 
             return new Position(destinationPan, destinationTilt);
         }
@@ -68,42 +86,81 @@ namespace Vitec.CameraHead.Models {
         /// </summary>
         /// <param name="current"></param>
         /// <param name="destination"></param>
-        /// <param name="panVelocity"></param>
-        /// <param name="tiltVelocity"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task MoveToPosition(Position current, Position destination, double panVelocity, double tiltVelocity) {
+        private async Task MoveToPosition(Position current, Position destination, CancellationToken cancellationToken) {
 
-            var panVector = CalcVectorPerInterval(current.Pan, destination.Pan, panVelocity);
-            var tiltVector = CalcVectorPerInterval(current.Pan, destination.Pan, tiltVelocity);
+            var panVector = CalcVectorPerInterval(current.Pan, destination.Pan, _panVelocity);
+            var tiltVector = CalcVectorPerInterval(current.Tilt, destination.Tilt, _tiltVelocity);
+            Debug.WriteLine($"{DateTime.UtcNow:T} {nameof(MoveToPosition)} Camera Head {Name} - Current {current} to Target {destination} - Pan Velocity {_panVelocity} Pan Vector {panVector:N2} Tilt Velocity {_tiltVelocity} Tilt Vector {tiltVector:N2} Interval {UpdateInterval}");
 
             while (!MovementCompleted(destination)) {
-                CurrentPosition = await CalcNewPosition(panVector, tiltVector, UpdateInterval);
+                if (cancellationToken.IsCancellationRequested) {
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+
+                _currentPosition = await CalcNewPosition(panVector, tiltVector, destination);
             }
+
+            RaiseOnStatusChanged(new StatusChangedEventArgs(CameraHeadStatus.Idle));
+            Debug.WriteLine($"{DateTime.UtcNow:T} {nameof(MoveToPosition)} Camera Head {Name} - Complete");
         }
 
-        private double CalcVectorPerInterval(double current, double destination, double panVelocity) {
-            var toTravel = Math.Abs(destination - current);
-            var timeToDestination = toTravel / panVelocity;
+        /// <summary>
+        /// Calculate the direction of travel and determine the distance traveled in degrees per interval at the given velocity.
+        /// This gives the vector for movement to be added each interval to the current position
+        /// </summary>
+        /// <param name="current"></param>
+        /// <param name="destination"></param>
+        /// <param name="velocity">degrees / sec</param>
+        /// <returns></returns>
+        private double CalcVectorPerInterval(double current, double destination, double velocity) {
+            var toTravel = destination - current;
 
-            return toTravel == 0.0 ? 0.0 : (toTravel / timeToDestination) / (1000.00/UpdateInterval);
+            // Calc the distance we can travel each interval and multiple by the direction 
+            return toTravel == 0.0 ? 0.0 : (destination > current ? 1 : -1)  * (velocity *(UpdateInterval/1000.00));
         }
 
         private bool MovementCompleted(Position destination) {
-            return Math.Abs(CurrentPosition.Pan) >= Math.Abs(destination.Pan) && Math.Abs(CurrentPosition.Tilt) >= Math.Abs(destination.Tilt);
+            // We can test for equality because the CalcNewPosition will stop exactly at destination 
+            return _currentPosition.Equals(destination);
         }
 
-        private async Task<Position> CalcNewPosition(double panVector, double tiltVector, int interval) {
+        private async Task<Position> CalcNewPosition(double panVector, double tiltVector, Position destination) {
             RaiseOnStatusChanged(new StatusChangedEventArgs(CameraHeadStatus.Moving));
 
-            await Task.Delay(interval);
-            var newPosition = new Position(CurrentPosition.Pan + panVector, CurrentPosition.Tilt + tiltVector);
+            await Task.Delay(UpdateInterval);
 
-            RaiseOnPositionChanged(new CameraHeadPositionEventArgs(newPosition, TimeSpan.FromMilliseconds(Math.Max(panVector, tiltVector) * interval)));
+            var newPosition = new Position(
+                IncrementByVector(_currentPosition.Pan, panVector, destination.Pan), 
+                IncrementByVector(_currentPosition.Tilt, tiltVector, destination.Tilt));
+
+            Debug.WriteLine($"{nameof(CalcNewPosition)} Camera Head {Name} - New {newPosition}");
+
+            var panTimeToDestination = Math.Abs(destination.Pan - _currentPosition.Pan) / _panVelocity;
+            var tiltTimeToDestination = Math.Abs(destination.Tilt - _currentPosition.Tilt) / _tiltVelocity;
+
+            // Determine if Pan or Tilt movement wil take the longest.
+            var timeToDestination = panTimeToDestination > tiltTimeToDestination
+                ? panTimeToDestination
+                : tiltTimeToDestination;
+
+            RaiseOnPositionChanged(new CameraHeadPositionEventArgs(newPosition, TimeSpan.FromSeconds(timeToDestination)));
 
             return newPosition;
         }
 
+        private double IncrementByVector(double currentPosition, double vector, double destination) {
+            var newPosition = currentPosition + vector;
+            if (vector > 0) {
+                return newPosition >= destination ? destination : newPosition;
+            }
+            return newPosition <= destination ? destination : newPosition;
+        }
+
         private void RaiseOnStatusChanged(StatusChangedEventArgs e) {
+            Debug.WriteLine($"{DateTime.UtcNow:T} {nameof(RaiseOnStatusChanged)} Camera Head {Name} - Status {e.Status}");
+
             OnStatusChanged?.Invoke(this, e);
         }
 

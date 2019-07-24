@@ -11,6 +11,11 @@
         public string Type { get; set; }
 
         /// <summary>
+        /// Set to true if the call to SetPosition needs to be from an async task
+        /// </summary>
+        public bool WrapInAsyncCall { get; set; }
+
+        /// <summary>
         /// Get/Sets the Camera Head name
         /// </summary>
         public string Name { get; set; }

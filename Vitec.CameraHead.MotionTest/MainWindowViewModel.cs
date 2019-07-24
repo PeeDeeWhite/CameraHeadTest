@@ -1,7 +1,9 @@
 ﻿namespace Vitec.CameraHead.MotionTest {
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Reflection;
+    using System.Windows.Input;
     using Vitec.CameraHead.Models;
     using Vitec.CameraHead.MotionTest.Annotations;
 
@@ -14,15 +16,36 @@
         private ObservableCollection<CameraHeadMonitorViewModel> _cameraHeadViewModels;
 
         public MainWindowViewModel() {
-            Studio = Configuration.BuildConfiguration(Assembly.GetExecutingAssembly()).CreateStudio();
-            
+            var configuration = Configuration.BuildConfiguration(Assembly.GetExecutingAssembly());
+            Studio = configuration.CreateStudio();
+
+            var cameraHeads = configuration.GetConfigurationSection<IEnumerable<Models.Configuration.CameraHead>>(Constants.Configuration.CameraHeads).ToList();
             var childVMs = new ObservableCollection<CameraHeadMonitorViewModel>();
             foreach (var cameraHead in Studio.CameraHeads) {
-                childVMs.Add(new CameraHeadMonitorViewModel(cameraHead));
+                var wrapInAsyncCall = cameraHeads.First(x => x.Name == cameraHead.Name).WrapInAsyncCall;
+                childVMs.Add(new CameraHeadMonitorViewModel(cameraHead, wrapInAsyncCall));
             }
 
             CameraHeadViewModels = childVMs;
+
+            SetAllPositionsCommand = new RelayCommand(OnSetAllPositions, CanSetAllPositions);
         }
+
+        public RelayCommand SetAllPositionsCommand { get; }
+
+        private void OnSetAllPositions()
+        {
+            foreach (var cameraHeadMonitorViewModel in _cameraHeadViewModels) {
+                ((ICommand)cameraHeadMonitorViewModel.SetPositionCommand).Execute(null);
+            }
+        }
+
+        private bool CanSetAllPositions()
+        {
+            return SelectedTarget != null;
+        }
+
+
 
         public Studio Studio {
             get => _studio;
@@ -42,6 +65,7 @@
                 {
                     viewModel.TargetPosition = value.Shots.First(x => x.HeadId == viewModel.CameraHead.Name).Position;
                 }
+                SetAllPositionsCommand.RaiseCanExecuteChanged();
             }
         }
     }

@@ -1,59 +1,71 @@
 ﻿namespace Vitec.CameraHead.MotionTest {
     using System;
+    using System.Threading.Tasks;
     using Vitec.CameraHead.Models;
 
     /// <summary>
     /// View model for displaying current status and progress of a camera head
     /// </summary>
     public class CameraHeadMonitorViewModel : ViewModelBase {
-
-        private ICameraHead _cameraHead;
+        private readonly bool _wrapInAsyncCall;
         private double _totalDistanceToTravel;
         private Position _currentPosition;
         private Position _targetPosition;
+        private Position _cameraTarget;
         private CameraHeadStatus _status;
         private TimeSpan _timeToShot;
         private double _progressValue;
 
-        public CameraHeadMonitorViewModel(ICameraHead cameraHead) {
+        public CameraHeadMonitorViewModel(ICameraHead cameraHead, bool wrapInAsyncCall) {
+            _wrapInAsyncCall = wrapInAsyncCall;
             SetPositionCommand = new RelayCommand(OnSetPosition, CanSetPosition);
             InitialiseCameraHead(cameraHead);
         }
 
         private void InitialiseCameraHead(ICameraHead cameraHead) {
-            _cameraHead = cameraHead;
+            CameraHead = cameraHead;
             if (cameraHead != null)
             {
                 CurrentPosition = new Position(0, 0);
                 Status = CameraHeadStatus.Idle;
-                _cameraHead.OnPositionChanged += (sender, args) => {
+                InitCounters();
+
+                CameraHead.OnPositionChanged += (sender, args) => {
                     TimeToShot = args.TimeToShot;
                     CurrentPosition = args.CurrentPosition;
+
+                    if (Status == CameraHeadStatus.Moving) {
+                        ProgressValue = CalcPercentageComplete();
+                    }
                 };
-                _cameraHead.OnStatusChanged += (sender, args) => {
+                CameraHead.OnStatusChanged += (sender, args) => {
                     Status = args.Status;
 
-                    switch (Status) {
-
-                        case CameraHeadStatus.Idle:
-                        case CameraHeadStatus.Disabled:
-                            ProgressValue = 0;
-                            break;
-                        case CameraHeadStatus.Moving:
-                            ProgressValue = CalcPercentageComplete();
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                    if (Status == CameraHeadStatus.Idle) {
+                        InitCounters();
                     }
                 };
             }
             OnPropertyChanged(nameof(CameraHead));
         }
 
-        private void OnSetPosition() {
-            _totalDistanceToTravel = DistanceToTravel(CurrentPosition, TargetPosition);
+        private void InitCounters() {
             ProgressValue = 0;
-            CameraHead.SetPosition(TargetPosition);
+            TimeToShot = TimeSpan.FromSeconds(0);
+        }
+
+        private void OnSetPosition() {
+            // Take a snapshot of target position to use for calculation in case it is updated
+            // by user selecting another event.
+            _cameraTarget = TargetPosition;
+            _totalDistanceToTravel = CurrentPosition.DistanceTo( _cameraTarget);
+            InitCounters();
+
+            if (_wrapInAsyncCall) {
+                Task.Run(() => { CameraHead.SetPosition(_cameraTarget); }).ConfigureAwait(false);
+                return;
+            }
+            CameraHead.SetPosition(_cameraTarget); 
         }
 
         private bool CanSetPosition()
@@ -66,9 +78,7 @@
         /// <summary>
         /// Gets/Sets the Camera Head 
         /// </summary>
-        public ICameraHead CameraHead {
-            get => _cameraHead;
-        }
+        public ICameraHead CameraHead { get; private set; }
 
         /// <summary>
         /// Gets/Sets the current position of the camera head
@@ -105,7 +115,6 @@
             set => SetProperty(ref _timeToShot, value);
         }
 
-
         /// <summary>
         /// Gets/sets the percentage complete of the movement to the target.
         /// </summary>
@@ -114,13 +123,11 @@
             set => SetProperty(ref _progressValue, value);
         }
 
-        private double DistanceToTravel(Position startPosition, Position endPosition) {
-            return Math.Abs(endPosition.Pan - startPosition.Pan) + Math.Abs(endPosition.Tilt - startPosition.Tilt);
-        }
 
         private double CalcPercentageComplete() {
-            // Calc total distance to travel minus distance left to travel over total distance
-            return (_totalDistanceToTravel - DistanceToTravel(CurrentPosition, TargetPosition)) / _totalDistanceToTravel * 100.00;
+            // Calc total distance to travel minus distance left to travel to get distance traveled. Divide by total distance
+            var distanceLeft = CurrentPosition.DistanceTo(_cameraTarget);
+            return (_totalDistanceToTravel - distanceLeft) / _totalDistanceToTravel * 100.00;
         }
     }
 }

@@ -18,10 +18,8 @@
         /// <param name="panVelocity"></param>
         /// <param name="tiltVelocity"></param>
         public FHR155(string name, double panVelocity = 1, double tiltVelocity = 1) : base(name, panVelocity, tiltVelocity) {
-            MinPanRange = -179.5;
-            MaxPanRange = 179.5;
-            MinTiltRange = -172.5;
-            MaxTiltRange = 172.5;
+            MinPosition = new Position(-179.5, -50);
+            MaxPosition = new Position(179.5, 50);
             UpdateInterval = 100; // Update interval in milliseconds
         }
 

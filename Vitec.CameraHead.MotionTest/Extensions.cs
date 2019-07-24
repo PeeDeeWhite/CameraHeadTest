@@ -97,5 +97,18 @@
             var targetPosition = cameraHead.TargetPositions[index];
             return new Position(targetPosition.Pan, targetPosition.Tilt);
         }
+
+        /// <summary>
+        /// Calc total distance to travel in both Pan and Tilt access
+        /// Use this to calculate progress. We can use the combined value as both change over time
+        /// and it is easier than determining which is longer distance each time.
+        /// </summary>
+        /// <param name="startPosition"></param>
+        /// <param name="endPosition"></param>
+        /// <returns></returns>
+        public static double DistanceTo(this Position startPosition, Position endPosition)
+        {
+            return Math.Abs(endPosition.Pan - startPosition.Pan) + Math.Abs(endPosition.Tilt - startPosition.Tilt);
+        }
     }
 }

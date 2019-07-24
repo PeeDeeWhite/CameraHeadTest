@@ -67,6 +67,14 @@ namespace Vitec.CameraHead.Models {
         private bool Equals(Position other) {
             return other != null && other.Pan == Pan && other.Tilt == Tilt;
         }
+
+        /// <summary>
+        /// Override ToString to return Position as Pan and Tilt
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() {
+            return $"[{Pan:N4}, {Tilt:N4}]";
+        }
     }
 
 }

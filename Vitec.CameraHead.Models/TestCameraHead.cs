@@ -1,6 +1,7 @@
 ﻿// ReSharper disable CompareOfFloatsByEqualityOperator  Zero positions are valid
 namespace Vitec.CameraHead.Models {
     using System;
+    using System.Diagnostics;
     using System.Timers;
 
     /// <summary>
@@ -48,10 +49,12 @@ namespace Vitec.CameraHead.Models {
                 _timeToShot = TimeSpan.FromMilliseconds(num3 * UpdateInterval);
                 _panVector = num1 == 0.0 ? 0.0 : num1 / num3;
                 _tiltVector = num2 == 0.0 ? 0.0 : num2 / num3;
+                Debug.WriteLine($"{DateTime.UtcNow:T} {nameof(SetPosition)} Camera Head {Name} - Current {_currentPosition} to Target {position} - Pan Vector {_panVector:N2} Tilt Vector {_tiltVector:N2} Interval {UpdateInterval}");
                 _finished = false;
             }
 
             do { } while (!_finished);
+            Debug.WriteLine($"{DateTime.UtcNow:T} {nameof(SetPosition)} Camera Head {Name} - Complete");
         }
 
         private void UpdateTimerElapsed(object sender, ElapsedEventArgs e) {
@@ -79,6 +82,9 @@ namespace Vitec.CameraHead.Models {
                 _timeToShot = _timeToShot.Subtract(TimeSpan.FromMilliseconds(UpdateInterval));
                 if (_timeToShot.TotalMilliseconds < 0.0)
                     _timeToShot = TimeSpan.Zero;
+
+                Debug.WriteLine($"{DateTime.UtcNow:T} {nameof(SetPosition)} Camera Head {Name} - Current {_currentPosition} TimeToShot {_timeToShot}");
+
                 RaisePositionChanged();
 
                 if (_timeToShot.TotalMilliseconds == 0.0) {

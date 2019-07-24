@@ -8,9 +8,11 @@
         d:DataContext="{d:DesignInstance {x:Type local:MainWindowViewModel}}"
         mc:Ignorable="d"
         Title="Vitec Camera Head Test Utility" 
-        Height="450" Width="800"
-        d:DesignHeight="450" d:DesignWidth="500" 
-        local:ViewModelLocator.AutoWireViewModel="True">
+        Height="auto" Width="auto"
+        d:DesignHeight="450" d:DesignWidth="600" 
+        WindowStyle="ThreeDBorderWindow"
+				SizeToContent="WidthAndHeight"
+        local:ViewModelLocator.AutoWireViewModel="True" >
 	<!--<Window.Resources>
 		<DataTemplate DataType="{x:Type local:CameraHeadMonitorViewModel}">
 			<local:CameraHeadMonitorView/>
@@ -18,20 +20,23 @@
 	</Window.Resources>-->
 	<Grid>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="250"/>
+			<ColumnDefinition Width="140"/>
 			<ColumnDefinition Width="5"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
-		<StackPanel Orientation="Horizontal">
 
-		<Label Content="Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
-		<ComboBox HorizontalAlignment="Left" Margin="70,10,0,0" VerticalAlignment="Top" Height="26" Width="100" 
+		<StackPanel Orientation="Vertical">
+
+			<Label Content="Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
+			<ComboBox HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="26" Width="100" 
 		          ItemsSource="{Binding Path=Studio.Targets}" 
 		          DisplayMemberPath="Name" 
 		          SelectedValue="{Binding SelectedTarget}"/>
+			<Button Content="Move All" Width="60" Margin="10,50,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"
+			        Command="{Binding SetAllPositionsCommand}"/>
 		</StackPanel>
 		<GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="5"/>
-		<ItemsControl Grid.Column="2" ItemsSource="{Binding CameraHeadViewModels}">
+		<ItemsControl Grid.Column="2" ItemsSource="{Binding CameraHeadViewModels}" Margin="0,0,10,0">
 			<!--<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>
 					<StackPanel Orientation="Vertical" />
