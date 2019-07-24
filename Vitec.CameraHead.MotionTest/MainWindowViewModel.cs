@@ -5,9 +5,7 @@
     using System.Reflection;
     using System.Windows.Input;
     using Vitec.CameraHead.Models;
-    using Vitec.CameraHead.MotionTest.Annotations;
 
-    [UsedImplicitly]
     public class MainWindowViewModel : ViewModelBase {
 
         private Studio _studio;
