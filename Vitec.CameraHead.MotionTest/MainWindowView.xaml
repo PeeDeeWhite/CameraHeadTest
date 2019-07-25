@@ -9,10 +9,9 @@
         mc:Ignorable="d"
         Title="Vitec Camera Head Test Utility" 
         Height="auto" Width="auto"
-        d:DesignHeight="450" d:DesignWidth="600" 
-        WindowStyle="ThreeDBorderWindow"
+        d:DesignHeight="450" d:DesignWidth="600"
 				SizeToContent="WidthAndHeight"
-        local:ViewModelLocator.AutoWireViewModel="True" >
+        local:ViewModelLocator.AutoWireViewModel="True" ResizeMode="NoResize" >
 	<!--<Window.Resources>
 		<DataTemplate DataType="{x:Type local:CameraHeadMonitorViewModel}">
 			<local:CameraHeadMonitorView/>
@@ -22,7 +21,8 @@
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="140"/>
 			<ColumnDefinition Width="5"/>
-			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="13*"/>
+			<ColumnDefinition Width="136*"/>
 		</Grid.ColumnDefinitions>
 
 		<StackPanel Orientation="Vertical">
@@ -35,8 +35,8 @@
 			<Button Content="Move All" Width="60" Margin="10,50,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"
 			        Command="{Binding SetAllPositionsCommand}"/>
 		</StackPanel>
-		<GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="5"/>
-		<ItemsControl Grid.Column="2" ItemsSource="{Binding CameraHeadViewModels}" Margin="0,0,10,0">
+		<GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="5" Margin="0,210,0,209"/>
+		<ItemsControl Grid.Column="2" ItemsSource="{Binding CameraHeadViewModels}" Margin="0,0,10,0" Grid.ColumnSpan="2">
 			<!--<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>
 					<StackPanel Orientation="Vertical" />
