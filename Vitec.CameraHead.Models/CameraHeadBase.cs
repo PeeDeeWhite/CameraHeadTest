@@ -7,16 +7,19 @@ namespace Vitec.CameraHead.Models {
     using System.Threading;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Base class for Camera Heads
+    /// </summary>
     public abstract class CameraHeadBase : ICameraHead {
         private readonly double _panVelocity; // degrees/second
         private readonly double _tiltVelocity; // degrees/second
-        private Position _currentPosition;
-        private protected Position MinPosition;
-        private protected Position MaxPosition;
+        private protected Position MinPosition; // Minimum Pan and Tilt range
+        private protected Position MaxPosition; // Maximum Pan and Tilt range
         private protected int UpdateInterval; // Update interval in milliseconds
         private readonly List<CancellationTokenSource> _cancellationTokenSources = new List<CancellationTokenSource>();
-        public event EventHandler<CameraHeadPositionEventArgs> OnPositionChanged;
+        private Position _currentPosition;
 
+        public event EventHandler<CameraHeadPositionEventArgs> OnPositionChanged;
         public event EventHandler<StatusChangedEventArgs> OnStatusChanged;
 
         protected CameraHeadBase(string name, double panVelocity, double tiltVelocity) {

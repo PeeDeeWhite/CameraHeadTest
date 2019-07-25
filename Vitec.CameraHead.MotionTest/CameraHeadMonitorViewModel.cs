@@ -56,7 +56,7 @@
 
         private void OnSetPosition() {
             // Take a snapshot of target position to use for calculation in case it is updated
-            // by user selecting another event.
+            // by user selecting another target.
             _cameraTarget = TargetPosition;
             _totalDistanceToTravel = CurrentPosition.DistanceTo( _cameraTarget);
             InitCounters();

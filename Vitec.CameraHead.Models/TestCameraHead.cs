@@ -7,7 +7,7 @@ namespace Vitec.CameraHead.Models {
     /// <summary>
     /// Sample Robotic Head
     /// Uses timer to simulate movement
-    /// Decompiled from Interview1 assembly and added to this solutions name space
+    /// Decompiled from Interview1 assembly and added to this solution's name space
     /// </summary>
     public class TestCameraHead : ICameraHead {
         private readonly double _panVelocity;

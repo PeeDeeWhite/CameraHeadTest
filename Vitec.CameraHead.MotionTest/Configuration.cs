@@ -6,7 +6,9 @@
     using Microsoft.Extensions.Configuration;
 
     /// <summary>
-    ///     Extension methods for Building and accessing configurations
+    /// Extension methods for Building and accessing configurations
+    /// This uses the Configuration extensions introduced in Asp.NET Core
+    /// but are not dependent on Core and so can be used to replace traditional XML config files.
     /// </summary>
     public static class Configuration {
 
@@ -52,13 +54,11 @@
         public static T GetConfigurationSection<T>(this IConfiguration configuration, string sectionName) {
             var configurationSection = configuration.GetSection(sectionName);
 
-            if (configurationSection == null)
-                throw new ApplicationException(
-                    $"Section {sectionName} not defined - Add User secrets or update appsettings.json");
+            if (configurationSection == null) {
+                throw new ApplicationException(string.Format(Constants.ErrorMessages.ConfigurationSectionNotDefined, sectionName));
+            }
 
-            var configurationObjects = configurationSection.Get<T>();
-
-            return configurationObjects;
+            return configurationSection.Get<T>();
         }
 
     }

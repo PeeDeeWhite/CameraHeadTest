@@ -1,7 +1,7 @@
 ﻿namespace Vitec.CameraHead.Models.Configuration {
 
     /// <summary>
-    /// Class for loading individual camera head and shot configuration data for loading into <see cref="Studio"/> instance
+    /// Individual camera head and shot configuration data for loading into <see cref="Studio"/> instance
     /// </summary>
     public class CameraHead {
 

@@ -1,0 +1,31 @@
+{
+  "Targets": [
+    "Target 1",
+    "Target 2",
+    "Target 3",
+    "Target 4"
+  ],
+  "CameraHeads": [
+    {
+      "Type": "Fred",
+      "TargetPositions": [
+        {
+          "Pan": 1.5,
+          "Tilt": 4.4
+        },
+        {
+          "Pan": 3.5,
+          "Tilt": 1.1
+        },
+        {
+          "Pan": 5.5,
+          "Tilt": 14.2
+        },
+        {
+          "Pan": -5.5,
+          "Tilt": 34.4
+        }
+      ]
+    }
+  ]
+}

@@ -1,9 +1,13 @@
 ﻿namespace Vitec.CameraHead.UnitTests {
+    using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using FluentAssertions;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Vitec.CameraHead.Models;
     using Vitec.CameraHead.Models.Configuration;
     using Vitec.CameraHead.MotionTest;
 
@@ -11,8 +15,7 @@
     public class StudioConfigurationTests {
 
         [TestMethod]
-        public void ConfigurationBuilder_ShouldLoadTargetNamesConfiguration()
-        {
+        public void ConfigurationBuilder_ShouldLoadTargetNamesConfiguration() {
             var configuration = Configuration.BuildConfiguration(Assembly.GetExecutingAssembly());
             var targets = configuration
                 .GetConfigurationSection<IEnumerable<string>>(Constants.Configuration.Targets)
@@ -27,7 +30,7 @@
         [TestMethod]
         public void ConfigurationBuilder_ShouldLoadCameraHeadConfiguration() {
             var configuration = Configuration.BuildConfiguration(Assembly.GetExecutingAssembly());
-            var cameraHeads =  configuration
+            var cameraHeads = configuration
                 .GetConfigurationSection<IEnumerable<CameraHead>>(Constants.Configuration.CameraHeads)
                 .ToArray();
 
@@ -41,8 +44,7 @@
         }
 
         [TestMethod]
-        public void ConfigurationExtensions_ShouldCreateStudioFromConfiguration()
-        {
+        public void ConfigurationExtensions_ShouldCreateStudioFromConfiguration() {
             var configuration = Configuration.BuildConfiguration(Assembly.GetExecutingAssembly());
 
             var studio = configuration.CreateStudio();
@@ -51,6 +53,69 @@
             studio.Targets.Should().NotBeNull();
             studio.Targets.Should().NotBeEmpty();
             studio.Targets.Should().HaveCount(4);
+        }
+
+        [TestMethod]
+        public void ConfigurationBuilderWhenConfigurationNull_ShouldThrowException() {
+            var configuration = new ConfigurationBuilder().Build();
+
+            Func<Studio> createStudio = () => configuration.CreateStudio();
+            createStudio.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ConfigurationBuilderWhenTargetsEmpty_ShouldThrowException() {
+
+            var configuration = BuildConfiguration(new[] { "EmptyTargets.json" });
+
+            Func<Studio> createStudio = () => configuration.CreateStudio();
+            createStudio.Should().Throw<ArgumentNullException>()
+                .WithMessage(Constants.ErrorMessages.TargetNamesRequired + "\r\nParameter name: targetNames");
+        }
+
+        [TestMethod]
+        public void ConfigurationBuilderWhenCameraHeadsEmpty_ShouldThrowException() {
+
+            var configuration = BuildConfiguration(new[] { "EmptyCameraHeads.json" });
+
+            Func<Studio> createStudio = () => configuration.CreateStudio();
+            createStudio.Should().Throw<ArgumentNullException>()
+                .WithMessage(Constants.ErrorMessages.CameraHeadsRequired + "\r\nParameter name: cameraHeads");
+        }
+
+        [TestMethod]
+        public void ConfigurationBuilderWhenCameraHeadTypeEmpty_ShouldThrowException()
+        {
+
+            var configuration = BuildConfiguration(new[] { "EmptyCameraHeadType.json" });
+
+            Func<Studio> createStudio = () => configuration.CreateStudio();
+            createStudio.Should().Throw<ArgumentNullException>()
+                .WithMessage(Constants.ErrorMessages.CameraHeadTypeRequired + "\r\nParameter name: Type");
+        }
+
+        [TestMethod]
+        public void ConfigurationBuilderWhenCameraHeadTypInvalid_ShouldThrowException()
+        {
+
+            var configuration = BuildConfiguration(new[] { "InvalidCameraHeadType.json" });
+
+            Func<Studio> createStudio = () => configuration.CreateStudio();
+            createStudio.Should().Throw<InvalidOperationException>()
+                .WithMessage(string.Format(Constants.ErrorMessages.InvalidCameraHeadsType, "Fred"));
+        }
+
+        private IConfiguration BuildConfiguration(string[] jsonFiles = null) {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory());
+
+            if (jsonFiles != null) {
+                foreach (var jsonFile in jsonFiles) {
+                    builder.AddJsonFile(jsonFile);
+                }
+            }
+
+            return builder.Build();
         }
 
     }

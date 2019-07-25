@@ -28,9 +28,9 @@
             var targetNames = configuration
                 .GetConfigurationSection<IEnumerable<string>>(Constants.Configuration.Targets);
 
+            // ReSharper disable once ConstantConditionalAccessQualifier
             var cameraHeads = configuration
-                .GetConfigurationSection<IEnumerable<CameraHead>>(Constants.Configuration.CameraHeads)
-                .ToArray();
+                .GetConfigurationSection<IEnumerable<CameraHead>>(Constants.Configuration.CameraHeads)?.ToArray();
 
             return new Studio(
                 targetNames.ToTargets(cameraHeads),
@@ -38,20 +38,16 @@
         }
 
         private static ICameraHead ToCameraHead(this CameraHead cameraHead) {
-            if (cameraHead == null) {
-                throw new ArgumentNullException(nameof(cameraHead), "A camera head configuration is required");
-            }
 
             if (string.IsNullOrWhiteSpace(cameraHead.Type)) {
-                throw new ArgumentNullException(nameof(cameraHead.Type), "A camera head type name is required");
+                throw new ArgumentNullException(nameof(cameraHead.Type), Constants.ErrorMessages.CameraHeadTypeRequired);
             }
 
             var cameraType = Type.GetType(cameraHead.Type);
 
             if (cameraType == null) {
-                throw new InvalidOperationException($"Invalid camera head type {cameraHead.Type}");
+                throw new InvalidOperationException(string.Format(Constants.ErrorMessages.InvalidCameraHeadsType, cameraHead.Type));
             }
-
 
             // Build constructor arguments with Type.Missing for optional parameters which are not supplied
             var constructorArgs = new[] {
@@ -72,12 +68,12 @@
 
         private static IEnumerable<Target> ToTargets(this IEnumerable<string> targetNames, IEnumerable<CameraHead> cameraHeads) {
             if (targetNames == null) {
-                throw new ArgumentNullException(nameof(targetNames), "Target Names are required");
+                throw new ArgumentNullException(nameof(targetNames), Constants.ErrorMessages.TargetNamesRequired);
             }
 
             if (cameraHeads == null)
             {
-                throw new ArgumentNullException(nameof(cameraHeads), "Camera heads are required");
+                throw new ArgumentNullException(nameof(cameraHeads), Constants.ErrorMessages.CameraHeadsRequired);
             }
 
             // Project configuration settings into Target creating Shots from position info on the Camera Heads
@@ -99,9 +95,9 @@
         }
 
         /// <summary>
-        /// Calc total distance to travel in both Pan and Tilt access
+        /// Calc total distance to travel in both Pan and Tilt axes
         /// Use this to calculate progress. We can use the combined value as both change over time
-        /// and it is easier than determining which is longer distance each time.
+        /// and it is easier than determining which is the longer distance each time.
         /// </summary>
         /// <param name="startPosition"></param>
         /// <param name="endPosition"></param>

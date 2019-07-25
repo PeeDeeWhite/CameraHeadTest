@@ -1,0 +1,29 @@
+{
+  "Targets": [
+  ],
+  "CameraHeads": [
+    {
+      "Type": "Vitec.CameraHead.Models.TestCameraHead, Vitec.CameraHead.Models",
+      "WrapInAsyncCall": true,
+      "Name": "Test Head - Fixed pan/tilt velocity",
+      "TargetPositions": [
+        {
+          "Pan": 5.0,
+          "Tilt": 4.4
+        },
+        {
+          "Pan": 13.5,
+          "Tilt": 1.1
+        },
+        {
+          "Pan": 17.5,
+          "Tilt": 14.2
+        },
+        {
+          "Pan": -3.5,
+          "Tilt": 34.4
+        }
+      ]
+    }
+  ]
+}

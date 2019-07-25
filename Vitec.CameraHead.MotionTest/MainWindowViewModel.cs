@@ -43,8 +43,6 @@
             return SelectedTarget != null;
         }
 
-
-
         public Studio Studio {
             get => _studio;
             set => SetProperty(ref _studio, value);

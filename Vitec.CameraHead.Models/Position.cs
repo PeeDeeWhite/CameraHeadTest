@@ -3,7 +3,7 @@
 namespace Vitec.CameraHead.Models {
 
     /// <summary>
-    ///     An Immutable class representing a Pan/Tilt position in degrees
+    ///   Immutable class representing a Pan/Tilt position in degrees
     /// </summary>
     public sealed class Position {
 
