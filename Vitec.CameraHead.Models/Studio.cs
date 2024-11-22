@@ -1,38 +1,22 @@
-﻿namespace Vitec.CameraHead.Models {
-    using System.Collections.Generic;
-    using System.Linq;
+﻿namespace Vitec.CameraHead.Models;
 
-    /// <summary>
-    /// Represents a Studio, a space containing a number of camera heads <see cref="ICameraHead"/> to test
-    /// and a number of targets <see cref="Target"/> for them to aim at
-    /// </summary>
-    /// <remarks>
-    /// Reverse engineered from Interview1 namespace
-    /// </remarks>
-    public sealed class Studio {
+using System.Collections.Generic;
+using System.Linq;
 
-        private readonly List<Target> _targets;
+/// <summary>
+///     Represents a Studio, a space containing a number of camera heads <see cref="ICameraHead" /> to test
+///     and a number of targets <see cref="Target" /> for them to aim at
+/// </summary>
+/// <remarks>
+///     Reverse engineered from Interview1 namespace
+/// </remarks>
+public sealed class Studio(IEnumerable<Target> targets, IEnumerable<ICameraHead> cameraHeads)
+{
+    private readonly List<ICameraHead> _cameraHeads = cameraHeads == null ? new List<ICameraHead>() : cameraHeads.ToList();
 
-        private readonly List<ICameraHead> _cameraHeads;
+    private readonly List<Target> _targets = targets == null ? new List<Target>() : targets.ToList();
 
-        /// <summary>
-        /// Create new instance passing in Camera Heads and Targets
-        /// </summary>
-        /// <param name="cameraHeads"></param>
-        /// <param name="targets"></param>
-        public Studio(IEnumerable<Target> targets, IEnumerable<ICameraHead> cameraHeads) {
-            _targets = targets == null ? new List<Target>() : targets.ToList();
-            _cameraHeads = cameraHeads == null ? new List<ICameraHead>() : cameraHeads.ToList();
-        }
+    public IEnumerable<ICameraHead> CameraHeads => _cameraHeads;
 
-        /// <summary>
-        /// Readonly Collection of Camera Heads to test
-        /// </summary>
-        public IEnumerable<ICameraHead> CameraHeads => _cameraHeads;
-
-        /// <summary>
-        /// Readonly collection of Targets to aim Camera Heads at
-        /// </summary>
-        public IEnumerable<Target> Targets => _targets;
-    }
+    public IEnumerable<Target> Targets => _targets;
 }

@@ -1,13 +1,12 @@
-﻿namespace Vitec.CameraHead.MotionTest
+﻿namespace Vitec.CameraHead.MotionTest;
+
+/// <summary>
+///     Interaction logic for CameraHeadMonitorView.xaml
+/// </summary>
+public partial class CameraHeadMonitorView
 {
-    /// <summary>
-    /// Interaction logic for CameraHeadMonitorView.xaml
-    /// </summary>
-    public partial class CameraHeadMonitorView 
+    public CameraHeadMonitorView()
     {
-        public CameraHeadMonitorView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

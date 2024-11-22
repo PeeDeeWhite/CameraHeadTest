@@ -1,12 +1,12 @@
-﻿namespace Vitec.CameraHead.MotionTest
+﻿namespace Vitec.CameraHead.MotionTest;
+
+/// <summary>
+///     Interaction logic for MainWindowView.xaml
+/// </summary>
+public partial class MainWindowView
 {
-    /// <summary>
-    /// Interaction logic for MainWindowView.xaml
-    /// </summary>
-    public partial class MainWindowView {
-        public MainWindowView()
-        {
-            InitializeComponent();
-        }
+    public MainWindowView()
+    {
+        InitializeComponent();
     }
 }

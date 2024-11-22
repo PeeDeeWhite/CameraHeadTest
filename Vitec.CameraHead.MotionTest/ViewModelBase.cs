@@ -1,25 +1,26 @@
-﻿namespace Vitec.CameraHead.MotionTest {
-    using System.ComponentModel;
-    using System.Runtime.CompilerServices;
-    using System.Windows;
+﻿namespace Vitec.CameraHead.MotionTest;
 
-    /// <summary>
-    ///     Base ViewModel implementing <see cref="INotifyPropertyChanged" />
-    /// </summary>
-    public abstract class ViewModelBase : DependencyObject, INotifyPropertyChanged {
-        public event PropertyChangedEventHandler PropertyChanged;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+/// <summary>
+///     Base ViewModel implementing <see cref="INotifyPropertyChanged" />
+/// </summary>
+public abstract class ViewModelBase : DependencyObject, INotifyPropertyChanged
+{
+    public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void SetProperty<T>(ref T member, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (Equals(member, value)) return;
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
-            member = value;
-            OnPropertyChanged(propertyName);
-        }
+    protected void SetProperty<T>(ref T member, T value, [CallerMemberName] string propertyName = null)
+    {
+        if (Equals(member, value)) return;
 
+        member = value;
+        OnPropertyChanged(propertyName);
     }
 }

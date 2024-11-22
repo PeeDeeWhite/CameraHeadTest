@@ -1,39 +1,40 @@
-﻿namespace Vitec.CameraHead.MotionTest {
-    using System;
-    using System.ComponentModel;
-    using System.Windows;
+﻿namespace Vitec.CameraHead.MotionTest;
 
-    /// <summary>
-    /// Simple ViewModel locator that checks for a model with the same name
-    /// as the view suffixed by 'Model' and driven by the Attached property AutoWireViewModel
-    /// </summary>
-    public static class ViewModelLocator {
+using System;
+using System.ComponentModel;
+using System.Windows;
 
-        public static bool GetAutoWireViewModel(DependencyObject obj) {
-            return (bool) obj.GetValue(AutoWireViewModelProperty);
-        }
+/// <summary>
+///     Simple ViewModel locator that checks for a model with the same name
+///     as the view suffixed by 'Model' and driven by the Attached property AutoWireViewModel
+/// </summary>
+public static class ViewModelLocator
+{
+    public static readonly DependencyProperty AutoWireViewModelProperty =
+        DependencyProperty.RegisterAttached("AutoWireViewModel",
+            typeof(bool), typeof(ViewModelLocator),
+            new PropertyMetadata(false, AutoWireViewModelChanged));
 
-        public static void SetAutoWireViewModel(DependencyObject obj, bool value) {
-            obj.SetValue(AutoWireViewModelProperty, value);
-        }
+    public static bool GetAutoWireViewModel(DependencyObject obj)
+    {
+        return (bool) obj.GetValue(AutoWireViewModelProperty);
+    }
 
-        public static readonly DependencyProperty AutoWireViewModelProperty =
-            DependencyProperty.RegisterAttached("AutoWireViewModel",
-                typeof(bool), typeof(ViewModelLocator),
-                new PropertyMetadata(false, AutoWireViewModelChanged));
+    public static void SetAutoWireViewModel(DependencyObject obj, bool value)
+    {
+        obj.SetValue(AutoWireViewModelProperty, value);
+    }
 
-        private static void AutoWireViewModelChanged(DependencyObject dependencyObject,
-            DependencyPropertyChangedEventArgs e) {
-            if (DesignerProperties.GetIsInDesignMode(dependencyObject)) return;
+    private static void AutoWireViewModelChanged(DependencyObject dependencyObject,
+        DependencyPropertyChangedEventArgs e)
+    {
+        if (DesignerProperties.GetIsInDesignMode(dependencyObject)) return;
 
-            var viewModelTypeName = dependencyObject.GetType() + "Model";
-            var viewModelType = Type.GetType(viewModelTypeName);
+        var viewModelTypeName = dependencyObject.GetType() + "Model";
+        var viewModelType = Type.GetType(viewModelTypeName);
 
-            if (viewModelType == null) {
-                throw new InvalidOperationException(string.Format(Constants.ErrorMessages.InvalidViewModelType, viewModelTypeName));
-            }
+        if (viewModelType == null) throw new InvalidOperationException(string.Format(Constants.ErrorMessages.InvalidViewModelType, viewModelTypeName));
 
-            ((FrameworkElement) dependencyObject).DataContext = Activator.CreateInstance(viewModelType);
-        }
+        ((FrameworkElement) dependencyObject).DataContext = Activator.CreateInstance(viewModelType);
     }
 }
